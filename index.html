@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Привет</title>
+  <title>Hola</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -22,6 +22,8 @@
     /* ─── Pixel-art canvas ─── */
     #pixel-canvas {
       image-rendering: pixelated;
+      max-width: 90vw;
+      height: auto;
     }
 
     /* ─── Greeting ─── */
@@ -85,13 +87,19 @@
     .str { color: #f1fa8c; }
     .cm  { color: #6272a4; }
     .num { color: #bd93f9; }
+
+    @media (max-width: 480px) {
+      body { gap: 24px; padding: 20px 0; justify-content: flex-start; padding-top: 40px; }
+      .code-block { padding: 16px; }
+      pre { font-size: 0.72rem; line-height: 1.6; }
+    }
   </style>
 </head>
 <body>
 
   <canvas id="pixel-canvas" width="320" height="160"></canvas>
 
-  <div class="greeting">Привет&nbsp;👋</div>
+  <div class="greeting">Hola&nbsp;👋</div>
 
   <div class="code-block">
     <div class="window-dots">
@@ -99,21 +107,21 @@
       <div class="dot dot-yellow"></div>
       <div class="dot dot-green"></div>
     </div>
-    <pre><span class="cm">// Та самая страничка, которую ты видишь</span>
+    <pre><span class="cm">// Esta misma página que estás viendo</span>
 <span class="kw">function</span> <span class="fn">greet</span>(name) {
   <span class="kw">const</span> hour = <span class="kw">new</span> <span class="fn">Date</span>().<span class="fn">getHours</span>();
-  <span class="kw">const</span> time = hour &lt; <span class="num">12</span> ? <span class="str">"Доброе утро"</span>
-             : hour &lt; <span class="num">18</span> ? <span class="str">"Добрый день"</span>
-             :                <span class="str">"Добрый вечер"</span>;
+  <span class="kw">const</span> time = hour &lt; <span class="num">12</span> ? <span class="str">"Buenos días"</span>
+             : hour &lt; <span class="num">18</span> ? <span class="str">"Buenas tardes"</span>
+             :                <span class="str">"Buenas noches"</span>;
   <span class="kw">return</span> <span class="str">`<span class="kw">${</span>time<span class="kw">}</span>, <span class="kw">${</span>name<span class="kw">}</span>!`</span>;
 }
 
-console.<span class="fn">log</span>(<span class="fn">greet</span>(<span class="str">"мир"</span>));
-<span class="cm">// → "Добрый вечер, мир!"</span></pre>
+console.<span class="fn">log</span>(<span class="fn">greet</span>(<span class="str">"mundo"</span>));
+<span class="cm">// → "Buenas noches, mundo!"</span></pre>
   </div>
 
   <script>
-    /* ─── Pixel-art: летящий космический корабль ─── */
+    /* ─── Pixel-art: nave espacial volando ─── */
     const canvas = document.getElementById('pixel-canvas');
     const ctx    = canvas.getContext('2d');
     const S = 10; // px per "pixel"
@@ -215,13 +223,13 @@ console.<span class="fn">log</span>(<span class="fn">greet</span>(<span class="s
 
     draw();
 
-    /* ─── Live clock in greeting ─── */
+    /* ─── Reloj en vivo ─── */
     function pad(n) { return String(n).padStart(2, '0'); }
     const greeting = document.querySelector('.greeting');
     setInterval(() => {
       const d = new Date();
       const t = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-      greeting.textContent = `Привет 👋  ${t}`;
+      greeting.textContent = `Hola 👋  ${t}`;
     }, 1000);
   </script>
 </body>
