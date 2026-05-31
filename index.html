@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Привет</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0d0d0d;
+      color: #e0e0e0;
+      font-family: 'Courier New', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    /* ─── Pixel-art canvas ─── */
+    #pixel-canvas {
+      image-rendering: pixelated;
+    }
+
+    /* ─── Greeting ─── */
+    .greeting {
+      font-size: clamp(2rem, 8vw, 5rem);
+      font-weight: bold;
+      letter-spacing: 0.12em;
+      background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #ff6b6b);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradient-shift 4s linear infinite;
+    }
+
+    @keyframes gradient-shift {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    /* ─── Code block ─── */
+    .code-block {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 24px 32px;
+      width: min(90vw, 640px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .code-block::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+    }
+    .dot-red   { background: #ff5f57; }
+    .dot-yellow{ background: #ffbd2e; }
+    .dot-green { background: #28c840; }
+
+    pre {
+      font-size: 0.85rem;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+
+    .kw  { color: #ff79c6; }
+    .fn  { color: #50fa7b; }
+    .str { color: #f1fa8c; }
+    .cm  { color: #6272a4; }
+    .num { color: #bd93f9; }
+  </style>
+</head>
+<body>
+
+  <canvas id="pixel-canvas" width="320" height="160"></canvas>
+
+  <div class="greeting">Привет&nbsp;👋</div>
+
+  <div class="code-block">
+    <div class="window-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <pre><span class="cm">// Та самая страничка, которую ты видишь</span>
+<span class="kw">function</span> <span class="fn">greet</span>(name) {
+  <span class="kw">const</span> hour = <span class="kw">new</span> <span class="fn">Date</span>().<span class="fn">getHours</span>();
+  <span class="kw">const</span> time = hour &lt; <span class="num">12</span> ? <span class="str">"Доброе утро"</span>
+             : hour &lt; <span class="num">18</span> ? <span class="str">"Добрый день"</span>
+             :                <span class="str">"Добрый вечер"</span>;
+  <span class="kw">return</span> <span class="str">`<span class="kw">${</span>time<span class="kw">}</span>, <span class="kw">${</span>name<span class="kw">}</span>!`</span>;
+}
+
+console.<span class="fn">log</span>(<span class="fn">greet</span>(<span class="str">"мир"</span>));
+<span class="cm">// → "Добрый вечер, мир!"</span></pre>
+  </div>
+
+  <script>
+    /* ─── Pixel-art: летящий космический корабль ─── */
+    const canvas = document.getElementById('pixel-canvas');
+    const ctx    = canvas.getContext('2d');
+    const S = 10; // px per "pixel"
+
+    // Sprite 13×7 (column, row), colors per cell
+    const SHIP = [
+      '     X     X     ',
+      '    XXX   XXX    ',
+      '   XXXXXXXXXXXXXXX',
+      '  XXXXXXXXXXXXXXXXX',
+      '   XXXXXXXXXXXXXXX',
+      '    XXX   XXX    ',
+      '     X     X     ',
+    ];
+
+    const STAR_COUNT = 30;
+    const W = canvas.width, H = canvas.height;
+
+    const stars = Array.from({ length: STAR_COUNT }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.5 + 0.5,
+      speed: Math.random() * 2 + 0.5,
+      brightness: Math.random(),
+    }));
+
+    // Exhaust particles
+    const particles = [];
+
+    function spawnParticle(shipX, shipY) {
+      // exhaust from the engines (right side of ship)
+      particles.push({
+        x: shipX + 170,
+        y: shipY + 30 + (Math.random() - 0.5) * 20,
+        vx: 2 + Math.random() * 2,
+        vy: (Math.random() - 0.5) * 0.8,
+        life: 1,
+        decay: 0.03 + Math.random() * 0.03,
+        size: 4 + Math.random() * 6,
+      });
+    }
+
+    let shipX = -200;
+    let frame = 0;
+
+    function drawShip(ox, oy) {
+      const colors = ['#4d96ff', '#a0c4ff', '#ffffff', '#ffd93d'];
+      SHIP.forEach((row, ry) => {
+        [...row].forEach((cell, rx) => {
+          if (cell !== ' ') {
+            const flicker = (rx + ry + frame) % 4;
+            ctx.fillStyle = colors[flicker];
+            ctx.fillRect(ox + rx * 10, oy + ry * 10, 9, 9);
+          }
+        });
+      });
+    }
+
+    function draw() {
+      frame++;
+      ctx.clearRect(0, 0, W, H);
+
+      // Stars
+      stars.forEach(s => {
+        s.x -= s.speed;
+        if (s.x < 0) { s.x = W; s.y = Math.random() * H; }
+        const alpha = 0.4 + 0.6 * Math.abs(Math.sin(frame * 0.05 + s.brightness * 10));
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Ship
+      const shipY = H / 2 - 35;
+      drawShip(shipX, shipY);
+
+      // Exhaust
+      if (frame % 2 === 0) spawnParticle(shipX, shipY);
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= p.decay;
+        if (p.life <= 0) { particles.splice(i, 1); continue; }
+        const hue = 20 + p.life * 40;
+        ctx.globalAlpha = p.life * 0.8;
+        ctx.fillStyle = `hsl(${hue}, 100%, 60%)`;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.globalAlpha = 1;
+      }
+
+      shipX += 1.8;
+      if (shipX > W + 30) shipX = -200;
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    /* ─── Live clock in greeting ─── */
+    function pad(n) { return String(n).padStart(2, '0'); }
+    const greeting = document.querySelector('.greeting');
+    setInterval(() => {
+      const d = new Date();
+      const t = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      greeting.textContent = `Привет 👋  ${t}`;
+    }, 1000);
+  </script>
+</body>
+</html>
